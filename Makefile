@@ -1,0 +1,6 @@
+CXX	=	g++
+SOURCE	=	main.cpp
+LINKER_FLAGS	=	-lSDL2
+EXECUTABLE_NAME	=	emulator
+all	:	${SOURCE}
+	${CXX}	${SOURCE}	${LINKER_FLAGS}	-o	${EXECUTABLE_NAME}
