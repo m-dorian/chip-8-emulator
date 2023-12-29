@@ -12,9 +12,9 @@ const unsigned int SCREEN_WIDTH = 1280;
 
 class CHIP { 
     public: 
-    std::vector<uint8_t> registers; 
+    std::vector<uint8_t> registers = std::vector<uint8_t>(16); 
     std::vector<uint8_t> memory = std::vector<uint8_t>(4096, 0); 
-    uint16_t I; 
+    uint16_t indexRegister; 
     uint16_t programCounter = START; 
     std::vector<uint16_t> stack = std::vector<uint16_t>(16); 
     std::vector<uint8_t> display = std::vector<uint8_t>(64 * 32); 
@@ -31,11 +31,11 @@ class CHIP {
     void printMemory(); 
     //Instructions 
     void CLS();
-    void JP(const uint16_t &opcode); 
-    void LDVX_byte(const uint16_t &opcode);
-    void ADDVX_byte(const uint16_t &opcode); 
-    void LD_I(const uint16_t &opcode); 
-    void DXYN(const uint16_t &opcode); 
+    void JP(const uint16_t opcode); 
+    void LDVX_byte(const uint16_t opcode);
+    void ADDVX_byte(const uint16_t opcode); 
+    void LD_I(const uint16_t opcode); 
+    void DXYN(const uint16_t opcode); 
 };
 
 void CHIP::loadROM(const std::string& filename) {
@@ -120,33 +120,45 @@ void CHIP::CLS() //00E0, clears the screen
   std::fill(display.begin(), display.end(), 0); 
 }
 
-void CHIP::JP(const uint16_t &opcode) //1nnn, sets PC to nnn
+void CHIP::JP(const uint16_t opcode) //1nnn, sets PC to nnn
 { 
   programCounter = opcode & 0xFFF;
 }
 
-void CHIP::LDVX_byte(const uint16_t &opcode) //6xkk, puts kk into register VX
+void CHIP::LDVX_byte(const uint16_t opcode) //6xkk, puts kk into register VX
 { 
-  uint16_t x = (opcode & 0xF00) >> 8;
-  registers[x] = opcode & 0xFF; 
+  uint8_t x = (opcode & 0xF00) >> 8;
+  uint8_t kk = opcode & 0xFF; 
+  registers[x] = kk; 
 }
-void CHIP::ADDVX_byte(const uint16_t &opcode) //7xkk, adds kk to register VX
+void CHIP::ADDVX_byte(const uint16_t opcode) //7xkk, adds kk to register VX
 { 
-  uint16_t x = (opcode & 0xF00) >> 8; 
+  uint8_t x = (opcode & 0xF00) >> 8; 
   registers[x] += opcode & 0xFF;
 }
-void CHIP::LD_I(const uint16_t &opcode) //Annn, register I is set to nnn
+void CHIP::LD_I(const uint16_t opcode) //Annn, register I is set to nnn
 { 
-  I = opcode & 0xFFF; 
+  indexRegister = opcode & 0xFFF; 
 }
-void CHIP::DXYN(const uint16_t &opcode) 
+void CHIP::DXYN(const uint16_t opcode) 
 { 
-  
-  int coordX = registers[(opcode & 0xF00) >> 8] % 64; 
-  int coordY = registers[(opcode & 0xF0) >> 4] % 32; 
+  uint8_t x = (opcode & 0xF00) >> 8;
+  uint8_t y = (opcode & 0xF0) >> 4;
+  int coordX = registers[x] % 64; 
+  int coordY = registers[y] % 32; 
   uint16_t N = opcode & 0xF;
   registers[0xF] = 0; 
-
+  for(int i = 0; i < N; i++) 
+  { 
+    uint8_t spriteRow = memory[indexRegister + i]; 
+    for(int j = 0; j < 8; j++) 
+    { 
+      if(coordX + j < 64 && coordY + i < 32)
+      { 
+        uint8_t screenPixel = display[(i * 64) + j]
+      }
+    }
+  }
 }
 CHIP::CHIP() 
 { 
@@ -211,7 +223,8 @@ int main()
             return false;
         }
     } 
-    uint16_t opcode = emulator.getNextInstruction(); 
+      uint16_t opcode = emulator.getNextInstruction(); 
+      emulator.decodeNextInstruction(opcode); 
     
   }
 } 
