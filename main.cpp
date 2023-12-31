@@ -33,12 +33,12 @@ class CHIP {
     void loadROM(const std::string &filename);
     void printMemory(); 
     //Instructions 
-    void CLS();
-    void JP(const uint16_t opcode); 
-    void LDVX_byte(const uint16_t opcode);
-    void ADDVX_byte(const uint16_t opcode); 
-    void LD_I(const uint16_t opcode); 
-    void DXYN(const uint16_t opcode); 
+    void _00E0();
+    void _1NNN(const uint16_t opcode); 
+    void _6XKK(const uint16_t opcode);
+    void _7XKK(const uint16_t opcode); 
+    void _ANNN(const uint16_t opcode); 
+    void _DXYN(const uint16_t opcode); 
 };
 
 void CHIP::loadROM(const std::string& filename) {
@@ -87,34 +87,34 @@ void CHIP::decodeNextInstruction(uint16_t opcode)
     { 
       if(opcode == 0x00E0) 
       { 
-        CLS(); 
+        _00E0(); 
         break;
       }
       else break; 
     }
     case 0x1: 
     { 
-      JP(opcode); 
+      _1NNN(opcode); 
       break;
     }
     case 0x6: 
     { 
-      LDVX_byte(opcode); 
+      _6XKK(opcode); 
       break;
     }
     case 0x7: 
     { 
-      ADDVX_byte(opcode);
+      _7XKK(opcode);
       break;
     }
     case 0xA: 
     { 
-      LD_I(opcode); 
+      _ANNN(opcode); 
       break;
     }
     case 0xD: 
     { 
-      DXYN(opcode); 
+      _DXYN(opcode); 
       break;
     }
   }
@@ -135,35 +135,35 @@ void CHIP::updateDisplay()
   }
   SDL_RenderPresent(renderer); 
 }
-void CHIP::CLS() //00E0, clears the screen
+void CHIP::_00E0() //clears the screen
 { //std::cout << "called 00E0\n" ; 
   std::fill(display.begin(), display.end(), 0); 
 }
 
-void CHIP::JP(const uint16_t opcode) //1nnn, sets PC to nnn
+void CHIP::_1NNN(const uint16_t opcode) // sets PC to nnn
 { //std::cout << "called 1NNN\n"; 
   programCounter = opcode & 0xFFF;
 }
 
-void CHIP::LDVX_byte(const uint16_t opcode) //6xkk, puts kk into register VX
+void CHIP::_6XKK(const uint16_t opcode) //puts kk into register VX
 { //std::cout << "called 6XKK\n"; 
   uint8_t x = (opcode & 0xF00) >> 8;
   uint8_t kk = opcode & 0xFF; 
   registers[x] = kk; 
 }
-void CHIP::ADDVX_byte(const uint16_t opcode) //7xkk, adds kk to register VX
+void CHIP::_7XKK(const uint16_t opcode) //7xkk, adds kk to register VX
 { //std::cout << "called 7XKK\n"; 
   uint8_t x = (opcode & 0xF00) >> 8; 
   registers[x] += opcode & 0xFF;
 }
-void CHIP::LD_I(const uint16_t opcode) //Annn, register I is set to nnn
+void CHIP::_ANNN(const uint16_t opcode) //Annn, register I is set to nnn
 { //std::cout << "called ANNN\n"; 
   uint16_t nnn = opcode & 0xFFF; 
   indexRegister = nnn;
   //std::cout << std::hex << opcode << '\n'; 
   //std::cout << std::hex << nnn << '\n' << '\n';  
 }
-void CHIP::DXYN(const uint16_t opcode) 
+void CHIP::_DXYN(const uint16_t opcode) 
 { 
   //std::cout << "called DXYN\n"; 
   uint8_t x = (opcode & 0xF00) >> 8;
