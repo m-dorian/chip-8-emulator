@@ -4,6 +4,7 @@
 #include <string>
 #include <bitset>
 #include <iomanip>
+#include <cstdlib>
 #include <SDL2/SDL.h>
 
 const unsigned int START = 0x200;
@@ -49,7 +50,13 @@ class CHIP {
     void _8XY3(); 
     void _8XY4(); 
     void _8XY5(); 
+    void _8XY6();
+    void _8XY7(); 
+    void _8XYE(); 
+    void _9XY0(); 
     void _ANNN(); 
+    void _BNNN(); 
+    void _CXKK(); 
     void _DXYN(); 
 };
 
@@ -169,11 +176,43 @@ void CHIP::decodeNextInstruction()
           _8XY5(); 
           break; 
         }
+        case 6: 
+        { 
+          _8XY6(); 
+          break; 
+        }
+        case 7: 
+        { 
+          _8XY7(); 
+          break; 
+        }
+        case 0xE: 
+        { 
+          _8XYE();
+          break;
+        }
+        default: 
+        break;
       }
+    }
+    case 0x9: 
+    { 
+      _9XY0(); 
+      break;
     }
     case 0xA: 
     { 
       _ANNN(); 
+      break;
+    }
+    case 0xB: 
+    { 
+      _BNNN(); 
+      break; 
+    }
+    case 0xC: 
+    { 
+      _CXKK(); 
       break;
     }
     case 0xD: 
@@ -301,17 +340,59 @@ void CHIP::_8XY5() // set VX -= VY, if VX > VY, VF = 1, otherwise 0;
 { 
   uint8_t x = (opcode & 0xF00) >> 8; 
   uint8_t y = (opcode & 0xF0) >> 4;
-  if(registers[y] > registers[x]) 
+  if(registers[x] > registers[y]) 
     registers[0xF] = 1; 
   else registers[0xF] = 0; 
   registers[x] -= registers[y]; 
 }
+void CHIP::_8XY6() // VX >>= 1, if LSB of VX == 1, VF = 1, otherwise VF = 0
+{
+  uint8_t x = (opcode & 0xF00) >> 8;
+  uint8_t lsb = registers[x] & 1; 
+  registers[0xF] = lsb; 
+  registers[x] >>= 1; 
+}
+void CHIP::_8XY7() // set VX = VY - VX, if VY > VX, VF = 1, otherwise 0;
+{ 
+  uint8_t x = (opcode & 0xF00) >> 8; 
+  uint8_t y = (opcode & 0xF0) >> 4;
+  if(registers[y] > registers[x]) 
+    registers[0xF] = 1; 
+  else registers[0xF] = 0; 
+  registers[x] = registers[y] - registers[x]; 
+}
+void CHIP::_8XYE() // VX >>= 1, if MSB of VX == 1, VF = 1, otherwise VF = 0
+{ 
+  uint8_t x = (opcode & 0xF00) >> 8;
+  uint8_t msb = registers[x] & 0x80; 
+  registers[0xF] = msb; 
+  registers[x] <<= 1; 
+}
+void CHIP::_9XY0() // skip next instruction if VX != VY
+{ 
+  uint8_t x = (opcode & 0xF00) >> 8; 
+  uint8_t y = (opcode & 0xF0) >> 4;
+  if(registers[x] != registers[y]) programCounter += 2;
+}
+
 void CHIP::_ANNN() //register I is set to nnn
 { //std::cout << "called ANNN\n"; 
   uint16_t nnn = opcode & 0xFFF; 
   indexRegister = nnn;
   //std::cout << std::hex << opcode << '\n'; 
   //std::cout << std::hex << nnn << '\n' << '\n';  
+}
+void CHIP::_BNNN() // PC = nnn + V0
+{ 
+  uint16_t nnn = opcode & 0xFFF;
+  programCounter = nnn + registers[0]; 
+}
+void CHIP::_CXKK() // VX = random byte & kk
+{ 
+  uint8_t x = (opcode & 0xF00) >> 8; 
+  uint8_t kk = opcode & 0xFF; 
+  uint8_t byte = rand() % 256; 
+  registers[x] = byte & kk;
 }
 void CHIP::_DXYN() 
 { 
@@ -402,8 +483,9 @@ CHIP::CHIP()
 
 int main() 
 { 
+  srand((unsigned) time(NULL)); 
   CHIP emulator; 
-  emulator.loadROM("Maze.ch8"); 
+  emulator.loadROM("flags.ch8"); 
   /*uint8_t first = opcode >> 12;
   uint8_t second = (opcode & 0xF00) >> 8;
   uint8_t third = (opcode & 0xF0) >> 4;
