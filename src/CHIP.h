@@ -58,6 +58,15 @@ class CHIP {
     void _DXYN(); 
     void _EX9E(); 
     void _EXA1();
+    void _FX07();
+    void _FX0A();
+    void _FX15();
+    void _FX18(); 
+    void _FX1E();
+    void _FX29();
+    void _FX33(); 
+    void _FX55();
+    void _FX65();
 };
 
 #endif

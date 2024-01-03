@@ -177,7 +177,9 @@ void CHIP::loop()
         getNextInstruction(); 
         //std::cout << std::hex << opcode << '\n';  
         decodeNextInstruction(); 
-      }
+      } 
+      if(delayTimer > 0) --delayTimer; 
+      if(soundTimer > 0) --soundTimer;
       updateDisplay(); 
   }
 }
@@ -324,7 +326,63 @@ void CHIP::decodeNextInstruction()
       if(fourthNibble == 0xE) 
         _EX9E(); 
       else _EXA1();
+      break;
     }
+    case 0xF: 
+    { 
+      uint8_t val = opcode & 0xFF; 
+      switch(val) 
+      { 
+        case 0x07: 
+        { 
+          _FX07(); 
+          break;
+        }
+        case 0x0A: 
+        { 
+          _FX0A(); 
+          break;
+        }
+        case 0x15: 
+        { 
+          _FX15(); 
+          break;
+        }
+        case 0x18: 
+        { 
+          _FX18(); 
+          break;
+        }
+        case 0x1E: 
+        { 
+          _FX1E(); 
+          break;
+        }
+        case 0x29: 
+        { 
+          _FX29(); 
+          break;
+        }
+        case 0x33: 
+        { 
+          _FX33(); 
+          break;
+        }
+        case 0x55: 
+        { 
+          _FX55(); 
+          break;
+        }
+        case 0x65: 
+         {  
+            _FX65();
+            break;
+         }
+         default: 
+         break;
+      }
+    }
+    
   }
 }
 

@@ -16,7 +16,7 @@ int main(int argc, char** argv)
     SCREEN_HEIGHT = std::stoi(argv[2]); 
     SCREEN_WIDTH = std::stoi(argv[3]); 
   }
-  CHIP emulator(SCREEN_HEIGHT, SCREEN_WIDTH); 
+  CHIP emulator(SCREEN_HEIGHT, SCREEN_WIDTH);  
   emulator.loadROM(argv[1]); 
   emulator.loop();
   return 0;

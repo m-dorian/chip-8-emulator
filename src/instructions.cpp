@@ -200,13 +200,129 @@ void CHIP::_DXYN()
     //std::cout << '\n';
     }
 }
-void CHIP::_EX9E() 
+void CHIP::_EX9E() // If key corresponding to the value of VX is pressed, skip next instruction. 
 { 
   uint8_t x = (opcode & 0xF00) >> 8;
-  if(keypad[registers[x]]) programCounter += 2; 
+  uint8_t key = registers[x]; 
+  if(keypad[key]) programCounter += 2; 
 }
-void CHIP::_EXA1() 
+void CHIP::_EXA1() // If key corresponding to the value of VX is not pressed, skip next instruction. 
 { 
   uint8_t x = (opcode & 0xF00) >> 8;
-  if(!keypad[registers[x]]) programCounter += 2; 
+  uint8_t key = registers[x]; 
+  if(!keypad[key]) programCounter += 2;
+}
+void CHIP::_FX07() 
+{ 
+  uint8_t x = (opcode & 0xF00) >> 8;
+  registers[x] = delayTimer;  
+}
+void CHIP::_FX0A() 
+{ 
+    SDL_Event event; 
+    uint8_t x = (opcode & 0xF00) >> 8;
+    while(SDL_WaitEvent(&event) != 0) 
+    {   
+         if(event.type == SDL_KEYDOWN) 
+        { 
+          switch(event.key.keysym.sym) 
+          { 
+            case SDLK_1: 
+            registers[x] = 1;
+            break; 
+            case SDLK_2: 
+            registers[x] = 2; 
+            break; 
+            case SDLK_3: 
+            registers[x] = 3; 
+            break; 
+            case SDLK_4: 
+            registers[x] = 0xC; 
+            break; 
+            case SDLK_q: 
+            registers[x] = 4; 
+            break; 
+            case SDLK_w: 
+            registers[x] = 5; 
+            break; 
+            case SDLK_e: 
+            registers[x] = 6;
+            break; 
+            case SDLK_r: 
+            registers[x] = 0xD; 
+            break;
+            case SDLK_a: 
+            registers[x] = 7; 
+            break; 
+            case SDLK_s: 
+            registers[x] = 8; 
+            break; 
+            case SDLK_d: 
+            registers[x] = 9; 
+            break;
+            case SDLK_f: 
+            registers[x] = 0xE; 
+            break; 
+            case SDLK_z:
+            registers[x] = 0xA; 
+            break; 
+            case SDLK_x: 
+            registers[x] = 0; 
+            break; 
+            case SDLK_c: 
+            registers[x] = 0xB; 
+            break;
+            case SDLK_v: 
+            registers[x] = 0xF; 
+            break;
+            default: 
+            break;
+          }
+        } 
+}
+}
+void CHIP::_FX15() 
+{ 
+  uint8_t x = (opcode & 0xF00) >> 8;
+  delayTimer = registers[x];   
+}
+void CHIP::_FX18() 
+{ 
+  uint8_t x = (opcode & 0xF00) >> 8;
+  soundTimer = registers[x];  
+}
+void CHIP::_FX1E() 
+{ 
+  uint8_t x = (opcode & 0xF00) >> 8;
+  indexRegister += registers[x];
+}
+void CHIP::_FX29() // I = location of font sprite corresponding to value of VX
+{ 
+  uint8_t x = (opcode & 0xF00) >> 8;
+  uint8_t value = registers[x];
+  indexRegister = 0x50 + (value * 5); //0x50 is the location at which the font is loaded into memory, each font sprite is 5 bytes long
+}
+void CHIP::_FX33() //Take the decimal value of VX and store the ones digit in I + 3, tens in I + 2 and hundreds in I.  
+{ 
+  uint8_t x = (opcode & 0xF00) >> 8; 
+  uint8_t val = registers[x]; 
+  memory[indexRegister] = val/100; 
+  memory[indexRegister + 1] = (val/10) % 10; 
+  memory[indexRegister + 2] = val % 10; 
+}
+void CHIP::_FX55() //Store V0 through VX into memory, starting at I
+{ 
+  uint8_t x = (opcode & 0xF00) >> 8;
+  for(int i = 0; i <= x; i++) 
+  { 
+    memory[indexRegister + i] = registers[i];
+  }
+} 
+void CHIP::_FX65() //Read into V0 through VX from memory, starting at I
+{ 
+  uint8_t x = (opcode & 0xF00) >> 8;
+  for(int i = 0; i <= x; i++) 
+  { 
+    registers[i] = memory[indexRegister + i];
+  }
 }
