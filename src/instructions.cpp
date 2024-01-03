@@ -200,3 +200,13 @@ void CHIP::_DXYN()
     //std::cout << '\n';
     }
 }
+void CHIP::_EX9E() 
+{ 
+  uint8_t x = (opcode & 0xF00) >> 8;
+  if(keypad[registers[x]]) programCounter += 2; 
+}
+void CHIP::_EXA1() 
+{ 
+  uint8_t x = (opcode & 0xF00) >> 8;
+  if(!keypad[registers[x]]) programCounter += 2; 
+}

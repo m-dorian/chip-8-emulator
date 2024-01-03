@@ -14,6 +14,7 @@ class CHIP {
     uint16_t programCounter = 0x200; // Adddress at which ROM is loaded 
     std::vector<uint16_t> stack = std::vector<uint16_t>(16); 
     std::vector<uint8_t> display = std::vector<uint8_t>(64 * 32); 
+    std::vector<uint8_t> keypad = std::vector<uint8_t>(16, 0); 
     uint8_t stackPointer = 0; 
     uint8_t delayTimer; 
     uint8_t soundTimer; 
@@ -55,6 +56,8 @@ class CHIP {
     void _BNNN(); 
     void _CXKK(); 
     void _DXYN(); 
+    void _EX9E(); 
+    void _EXA1();
 };
 
 #endif
