@@ -181,6 +181,7 @@ void CHIP::loop()
       if(delayTimer > 0) --delayTimer; 
       if(soundTimer > 0) --soundTimer;
       updateDisplay(); 
+      SDL_Delay(4);
   }
 }
 void CHIP::getNextInstruction() 
